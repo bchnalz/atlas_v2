@@ -6,8 +6,12 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import Dashboard from '@/pages/Dashboard'
 import Devices from '@/pages/Devices'
+import DeviceDetail from '@/pages/DeviceDetail'
+import DeviceForm from '@/pages/DeviceForm'
 import Tasks from '@/pages/Tasks'
 import Profile from '@/pages/Profile'
+import AdminUsers from '@/pages/AdminUsers'
+import MasterData from '@/pages/MasterData'
 
 const queryClient = new QueryClient()
 
@@ -16,11 +20,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected routes */}
           <Route
             element={
               <ProtectedRoute>
@@ -30,12 +32,16 @@ function App() {
           >
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/devices" element={<Devices />} />
+            <Route path="/devices/new" element={<DeviceForm />} />
+            <Route path="/devices/:id" element={<DeviceDetail />} />
+            <Route path="/devices/:id/edit" element={<DeviceForm />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/master/:tab" element={<MasterData />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Route>
 
-          {/* 404 */}
           <Route
             path="*"
             element={
