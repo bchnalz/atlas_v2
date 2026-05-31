@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+﻿import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -10,7 +10,7 @@ import {
   ChevronLeft,
   LogOut,
   FileSpreadsheet,
-  Upload,
+  BarChart3,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { isAdmin, hasCapability } from '@/lib/routeAccess'
@@ -87,6 +87,23 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
             {!collapsed && <span>Master Data</span>}
           </NavLink>
         )}
+        {(user?.userCategory?.nama === 'Administrator' ||
+          user?.userCategory?.nama === 'Helpdesk') && (
+          <NavLink
+            to="/evaluation"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                isActive
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+              )
+            }
+          >
+            <BarChart3 className="size-4 shrink-0" />
+            {!collapsed && <span>Evaluation</span>}
+          </NavLink>
+        )}
         {isAdmin(user) && (
           <NavLink
             to="/admin/users"
@@ -115,21 +132,7 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
           }
         >
           <FileSpreadsheet className="size-4 shrink-0" />
-          {!collapsed && <span>Export</span>}
-        </NavLink>
-        <NavLink
-          to="/import"
-          className={({ isActive }) =>
-            cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-              isActive
-                ? 'bg-accent text-accent-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-            )
-          }
-        >
-          <Upload className="size-4 shrink-0" />
-          {!collapsed && <span>Import</span>}
+          {!collapsed && <span>Export/Import</span>}
         </NavLink>
         <NavLink
           to="/profile"
