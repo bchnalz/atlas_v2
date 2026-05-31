@@ -6,7 +6,18 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, Play, Pause, CheckCircle, Circle, Monitor, Clock } from 'lucide-react'
+import {
+  ArrowLeft,
+  Play,
+  Pause,
+  CheckCircle,
+  Circle,
+  Monitor,
+  Clock,
+  UserPlus,
+  Plus,
+  Loader2,
+} from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -39,6 +50,9 @@ export default function TaskDetail() {
   const [showComplete, setShowComplete] = useState(false)
   const [holdReason, setHoldReason] = useState('')
   const [showHold, setShowHold] = useState(false)
+  const [showAssign, setShowAssign] = useState(false)
+  const [assignUserId, setAssignUserId] = useState('')
+  const [assignDeviceId, setAssignDeviceId] = useState('')
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   const { data: task, isLoading } = useQuery({
@@ -122,6 +136,56 @@ export default function TaskDetail() {
         .insert({ task_assignment_id: id, action: status, performed_by: uid })
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['task', id] }),
+  })
+
+  // Available users and devices for assignment
+  const { data: availableUsers } = useQuery({
+    queryKey: ['available-users'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, user_categories!inner(nama)')
+        .is('deleted_at', null)
+        .neq('status', 'inactive')
+      return data ?? []
+    },
+  })
+
+  const { data: availableDevices } = useQuery({
+    queryKey: ['available-devices'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('perangkat')
+        .select('id, nama_perangkat, serial_number')
+        .is('deleted_at', null)
+        .limit(50)
+      return data ?? []
+    },
+  })
+
+  const assignMutation = useMutation({
+    mutationFn: async () => {
+      const uid = (await supabase.auth.getUser()).data.user?.id
+      if (assignUserId) {
+        await supabase.from('task_assignment_users').insert({
+          task_assignment_id: id,
+          user_id: assignUserId,
+        })
+      }
+      if (assignDeviceId) {
+        await supabase.from('task_assignment_devices').insert({
+          task_assignment_id: id,
+          perangkat_id: assignDeviceId,
+          linked_by: uid,
+        })
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', id] })
+      setShowAssign(false)
+      setAssignUserId('')
+      setAssignDeviceId('')
+    },
   })
 
   const [elapsed, setElapsed] = useState(0)
@@ -337,8 +401,13 @@ export default function TaskDetail() {
 
         <div className="space-y-4">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex-row items-center justify-between">
               <CardTitle className="text-sm">Assigned To</CardTitle>
+              {task.status !== 'completed' && task.status !== 'cancelled' && (
+                <Button variant="ghost" size="xs" onClick={() => setShowAssign(true)}>
+                  <UserPlus className="mr-1 size-3" /> Assign
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="space-y-2">
               {task.assignments?.map((a: any) => (
@@ -391,6 +460,63 @@ export default function TaskDetail() {
           )}
         </div>
       </div>
+
+      {/* Assign Dialog */}
+      <Dialog open={showAssign} onOpenChange={setShowAssign}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign to Task</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">Assign User</label>
+              <select
+                value={assignUserId}
+                onChange={(e) => setAssignUserId(e.target.value)}
+                className="flex h-8 w-full rounded-lg border bg-background px-3 text-sm"
+              >
+                <option value="">Select user...</option>
+                {availableUsers?.map((u: any) => (
+                  <option key={u.id} value={u.id}>
+                    {u.full_name} ({u.user_categories?.nama})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">Link Device</label>
+              <select
+                value={assignDeviceId}
+                onChange={(e) => setAssignDeviceId(e.target.value)}
+                className="flex h-8 w-full rounded-lg border bg-background px-3 text-sm"
+              >
+                <option value="">Select device...</option>
+                {availableDevices?.map((d: any) => (
+                  <option key={d.id} value={d.id}>
+                    {d.nama_perangkat} ({d.serial_number ?? 'no SN'})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowAssign(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => assignMutation.mutate()}
+              disabled={assignMutation.isPending || (!assignUserId && !assignDeviceId)}
+            >
+              {assignMutation.isPending ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 size-4" />
+              )}
+              Assign
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showComplete} onOpenChange={setShowComplete}>
         <DialogContent>

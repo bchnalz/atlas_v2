@@ -16,6 +16,7 @@ import Profile from '@/pages/Profile'
 import AdminUsers from '@/pages/AdminUsers'
 import MasterData from '@/pages/MasterData'
 import ExportPage from '@/pages/ExportPage'
+import ImportPage from '@/pages/ImportPage'
 
 const queryClient = new QueryClient()
 
@@ -48,6 +49,7 @@ function App() {
             <Route path="/master" element={<Navigate to="/master/locations" replace />} />
             <Route path="/master/:tab" element={<MasterData />} />
             <Route path="/export" element={<ExportPage />} />
+            <Route path="/import" element={<ImportPage />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Route>
 

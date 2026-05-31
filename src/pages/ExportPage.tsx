@@ -1,8 +1,10 @@
-import { supabase } from '@/lib/supabase'
+﻿import { supabase } from '@/lib/supabase'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
-import { Download, FileSpreadsheet } from 'lucide-react'
+import { Download, FileSpreadsheet, Upload } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export default function ExportPage() {
+  const navigate = useNavigate()
   const exportDevices = async () => {
     const { data } = await supabase.from('perangkat').select('*').is('deleted_at', null)
     if (!data?.length) return
@@ -109,6 +111,25 @@ export default function ExportPage() {
               </p>
             </div>
             <Download className="size-4 ml-auto text-muted-foreground" />
+          </CardHeader>
+        </Card>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-lg font-medium mb-4">Import</h2>
+        <Card
+          className="cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => navigate('/import')}
+        >
+          <CardHeader className="flex-row items-center gap-4">
+            <Upload className="size-8 text-primary" />
+            <div>
+              <CardTitle className="text-base">Import Devices</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Upload Excel file (.xlsx) with device data
+              </p>
+            </div>
+            <Upload className="size-4 ml-auto text-muted-foreground" />
           </CardHeader>
         </Card>
       </div>
