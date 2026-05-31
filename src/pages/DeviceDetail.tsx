@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, Edit, QrCode } from 'lucide-react'
+import { ArrowLeft, Edit, QrCode, ScanLine } from 'lucide-react'
+import { QRCodeModal } from '@/components/QRCodeModal'
+import { QRScannerModal } from '@/components/QRScannerModal'
+import { useState } from 'react'
 
 const statusColors: Record<string, string> = {
   layak: 'bg-green-500/10 text-green-600 dark:text-green-400',
@@ -17,6 +20,8 @@ const statusColors: Record<string, string> = {
 export default function DeviceDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [showQr, setShowQr] = useState(false)
+  const [showScanner, setShowScanner] = useState(false)
 
   const {
     data: device,
@@ -78,9 +83,13 @@ export default function DeviceDetail() {
           <Edit className="mr-2 size-4" />
           Edit
         </Button>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={() => setShowQr(true)}>
           <QrCode className="mr-2 size-4" />
           QR Code
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setShowScanner(true)}>
+          <ScanLine className="mr-2 size-4" />
+          Scan
         </Button>
       </div>
 
@@ -147,6 +156,13 @@ export default function DeviceDetail() {
           <p className="text-sm text-muted-foreground">Service history coming in Sprint 3.</p>
         </CardContent>
       </Card>
+      <QRCodeModal
+        open={showQr}
+        onOpenChange={setShowQr}
+        deviceId={device.id}
+        deviceName={device.nama_perangkat}
+      />
+      <QRScannerModal open={showScanner} onOpenChange={setShowScanner} />
     </div>
   )
 }

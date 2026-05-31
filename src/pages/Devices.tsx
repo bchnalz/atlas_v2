@@ -19,8 +19,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Search, MoreHorizontal, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, MoreHorizontal, Plus, ChevronLeft, ChevronRight, ScanLine } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { QRScannerModal } from '@/components/QRScannerModal'
 
 const PAGE_SIZE = 20
 
@@ -39,6 +40,7 @@ export default function Devices() {
   const [type, setType] = useState('all')
   const [status, setStatus] = useState('all')
   const [page, setPage] = useState(0)
+  const [showScanner, setShowScanner] = useState(false)
   const navigate = useNavigate()
 
   const query = useQuery({
@@ -71,10 +73,16 @@ export default function Devices() {
       {/* Title + Actions */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Devices</h1>
-        <Button onClick={() => navigate('/devices/new')}>
-          <Plus className="mr-2 size-4" />
-          Add Device
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowScanner(true)}>
+            <ScanLine className="mr-2 size-4" />
+            Scan QR
+          </Button>
+          <Button onClick={() => navigate('/devices/new')}>
+            <Plus className="mr-2 size-4" />
+            Add Device
+          </Button>
+        </div>
       </div>
 
       {/* Search + Filters */}
@@ -231,6 +239,8 @@ export default function Devices() {
           </div>
         </div>
       )}
+
+      <QRScannerModal open={showScanner} onOpenChange={setShowScanner} />
     </div>
   )
 }
