@@ -38,6 +38,7 @@ function App() {
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/master" element={<Navigate to="/master/locations" replace />} />
             <Route path="/master/:tab" element={<MasterData />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Route>

@@ -18,7 +18,11 @@ export default function DeviceDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const { data: device, isLoading } = useQuery({
+  const {
+    data: device,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['device', id],
     queryFn: async () => {
       const { data } = await supabase.from('perangkat').select('*').eq('id', id).single()
@@ -31,6 +35,17 @@ export default function DeviceDetail() {
       <div className="p-6 space-y-4">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-64 w-full" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-sm text-destructive mb-4">Failed to load device details.</p>
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          Retry
+        </Button>
       </div>
     )
   }

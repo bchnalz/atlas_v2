@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Plus, Save, Loader2, Search, Pencil } from 'lucide-react'
+import { Plus, Save, Loader2, Search, Pencil, Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 interface MasterTableProps<T> {
@@ -40,6 +40,7 @@ export function MasterTable<T extends { id: string; deleted_at?: string | null }
   fetchFn,
   createFn,
   updateFn,
+  deleteFn,
   fields,
   rowRender,
 }: MasterTableProps<T>) {
@@ -47,6 +48,9 @@ export function MasterTable<T extends { id: string; deleted_at?: string | null }
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<T | null>(null)
   const [form, setForm] = useState<Record<string, string>>({})
+  const [showDelete, setShowDelete] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState('')
   const queryClient = useQueryClient()
 
   const { data, isLoading } = useQuery({
@@ -70,6 +74,21 @@ export function MasterTable<T extends { id: string; deleted_at?: string | null }
     },
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (deletingId) await deleteFn(deletingId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey })
+      setShowDelete(false)
+      setDeletingId(null)
+      setDeleteError('')
+    },
+    onError: (err: Error) => {
+      setDeleteError(err.message)
+    },
+  })
+
   const openCreate = () => {
     setEditing(null)
     setForm({})
@@ -84,6 +103,12 @@ export function MasterTable<T extends { id: string; deleted_at?: string | null }
     })
     setForm(f)
     setShowForm(true)
+  }
+
+  const confirmDelete = (id: string) => {
+    setDeletingId(id)
+    setDeleteError('')
+    setShowDelete(true)
   }
 
   const filtered = data?.filter((item: any) => {
@@ -123,7 +148,7 @@ export function MasterTable<T extends { id: string; deleted_at?: string | null }
               {columns.map((col) => (
                 <TableHead key={col.key}>{col.label}</TableHead>
               ))}
-              <TableHead className="w-12"></TableHead>
+              <TableHead className="w-20"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -136,7 +161,7 @@ export function MasterTable<T extends { id: string; deleted_at?: string | null }
                     </TableCell>
                   ))}
                   <TableCell>
-                    <Skeleton className="h-4 w-8" />
+                    <Skeleton className="h-4 w-16" />
                   </TableCell>
                 </TableRow>
               ))
@@ -154,9 +179,14 @@ export function MasterTable<T extends { id: string; deleted_at?: string | null }
                 <TableRow key={item.id}>
                   {rowRender(item)}
                   <TableCell>
-                    <Button variant="ghost" size="icon-xs" onClick={() => openEdit(item)}>
-                      <Pencil className="size-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon-xs" onClick={() => openEdit(item)}>
+                        <Pencil className="size-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon-xs" onClick={() => confirmDelete(item.id)}>
+                        <Trash2 className="size-3 text-destructive" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -165,6 +195,7 @@ export function MasterTable<T extends { id: string; deleted_at?: string | null }
         </Table>
       </div>
 
+      {/* Create/Edit Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent>
           <DialogHeader>
@@ -197,6 +228,36 @@ export function MasterTable<T extends { id: string; deleted_at?: string | null }
                 <Save className="mr-2 size-4" />
               )}
               {editing ? 'Save' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={showDelete} onOpenChange={setShowDelete}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete {title.slice(0, -1)}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This will soft-delete this item. Are you sure?
+          </p>
+          {deleteError && <p className="text-xs text-destructive">{deleteError}</p>}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowDelete(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <Trash2 className="mr-2 size-4" />
+              )}
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
