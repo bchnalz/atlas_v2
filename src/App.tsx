@@ -9,6 +9,8 @@ import Devices from '@/pages/Devices'
 import DeviceDetail from '@/pages/DeviceDetail'
 import DeviceForm from '@/pages/DeviceForm'
 import Tasks from '@/pages/Tasks'
+import TaskDetail from '@/pages/TaskDetail'
+import TaskForm from '@/pages/TaskForm'
 import Profile from '@/pages/Profile'
 import AdminUsers from '@/pages/AdminUsers'
 import MasterData from '@/pages/MasterData'
@@ -36,6 +38,8 @@ function App() {
             <Route path="/devices/:id" element={<DeviceDetail />} />
             <Route path="/devices/:id/edit" element={<DeviceForm />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/tasks/create" element={<TaskForm />} />
+            <Route path="/tasks/:id" element={<TaskDetail />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/master" element={<Navigate to="/master/locations" replace />} />
