@@ -8,12 +8,14 @@ import Dashboard from '@/pages/Dashboard'
 import Devices from '@/pages/Devices'
 import DeviceDetail from '@/pages/DeviceDetail'
 import DeviceForm from '@/pages/DeviceForm'
+import MutationWizard from '@/pages/MutationWizard'
 import Tasks from '@/pages/Tasks'
 import TaskDetail from '@/pages/TaskDetail'
 import TaskForm from '@/pages/TaskForm'
 import Profile from '@/pages/Profile'
 import AdminUsers from '@/pages/AdminUsers'
 import MasterData from '@/pages/MasterData'
+import ExportPage from '@/pages/ExportPage'
 
 const queryClient = new QueryClient()
 
@@ -37,6 +39,7 @@ function App() {
             <Route path="/devices/new" element={<DeviceForm />} />
             <Route path="/devices/:id" element={<DeviceDetail />} />
             <Route path="/devices/:id/edit" element={<DeviceForm />} />
+            <Route path="/devices/:id/transfer" element={<MutationWizard />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/tasks/create" element={<TaskForm />} />
             <Route path="/tasks/:id" element={<TaskDetail />} />
@@ -44,6 +47,7 @@ function App() {
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/master" element={<Navigate to="/master/locations" replace />} />
             <Route path="/master/:tab" element={<MasterData />} />
+            <Route path="/export" element={<ExportPage />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Route>
 

@@ -9,6 +9,7 @@ import {
   User,
   ChevronLeft,
   LogOut,
+  FileSpreadsheet,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { isAdmin, hasCapability } from '@/lib/routeAccess'
@@ -36,7 +37,6 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
         collapsed ? 'w-16' : 'w-60',
       )}
     >
-      {/* Logo */}
       <div className="flex h-14 items-center border-b px-4">
         <span className={cn('font-semibold', collapsed && 'hidden')}>ATLAS</span>
         <Button
@@ -49,7 +49,6 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
         </Button>
       </div>
 
-      {/* Main nav */}
       <nav className="flex-1 space-y-1 p-2">
         {mainLinks.map((link) => (
           <NavLink
@@ -70,7 +69,6 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Bottom section */}
       <div className="border-t p-2 space-y-1">
         {(isAdmin(user) || hasCapability(user, 'master_data')) && (
           <NavLink
@@ -104,6 +102,20 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
             {!collapsed && <span>User Mgmt</span>}
           </NavLink>
         )}
+        <NavLink
+          to="/export"
+          className={({ isActive }) =>
+            cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              isActive
+                ? 'bg-accent text-accent-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+            )
+          }
+        >
+          <FileSpreadsheet className="size-4 shrink-0" />
+          {!collapsed && <span>Export</span>}
+        </NavLink>
         <NavLink
           to="/profile"
           className={({ isActive }) =>

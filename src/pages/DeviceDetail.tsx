@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, Edit, QrCode, ScanLine } from 'lucide-react'
+import { ArrowLeft, Edit, QrCode, ScanLine, ArrowRightLeft } from 'lucide-react'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { QRScannerModal } from '@/components/QRScannerModal'
 import { useState } from 'react'
@@ -87,6 +87,10 @@ export default function DeviceDetail() {
           <QrCode className="mr-2 size-4" />
           QR Code
         </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate(`/devices/${id}/transfer`)}>
+          <ArrowRightLeft className="mr-2 size-4" />
+          Transfer
+        </Button>
         <Button variant="outline" size="sm" onClick={() => setShowScanner(true)}>
           <ScanLine className="mr-2 size-4" />
           Scan
@@ -148,14 +152,7 @@ export default function DeviceDetail() {
       </div>
 
       {/* Service History */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="text-base">Service History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">Service history coming in Sprint 3.</p>
-        </CardContent>
-      </Card>
+      <ServiceHistory deviceId={device.id} />
       <QRCodeModal
         open={showQr}
         onOpenChange={setShowQr}
@@ -164,6 +161,89 @@ export default function DeviceDetail() {
       />
       <QRScannerModal open={showScanner} onOpenChange={setShowScanner} />
     </div>
+  )
+}
+
+function ServiceHistory({ deviceId }: { deviceId: string }) {
+  const { data: history } = useQuery({
+    queryKey: ['device-service-history', deviceId],
+    queryFn: async () => {
+      // Get completed tasks linked to this device via task_assignment_devices
+      const { data: tasks } = await supabase
+        .from('task_assignment_devices')
+        .select(
+          `
+          task_assignments!inner(id, task_number, title, completed_at, completion_notes, status),
+          linked_during_execution
+        `,
+        )
+        .eq('perangkat_id', deviceId)
+        .not('task_assignments.completed_at', 'is', null)
+        .order('task_assignments.completed_at', { ascending: false })
+        .limit(20)
+
+      // Also get mutation records
+      const { data: mutations } = await supabase
+        .from('mutasi_perangkat')
+        .select(
+          '*, ms_lokasi!lokasi_lama(kode, nama), ms_lokasi!lokasi_baru(kode, nama), profiles!dilakukan_oleh(full_name)',
+        )
+        .eq('perangkat_id', deviceId)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      return { tasks: tasks ?? [], mutations: mutations ?? [] }
+    },
+  })
+
+  return (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="text-base">Service History</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {history?.tasks.length === 0 && history?.mutations.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No service history for this device</p>
+        ) : (
+          <>
+            {history?.tasks.map((t: any) => (
+              <div
+                key={t.task_assignments.id}
+                className="flex items-start gap-3 text-sm py-1 border-b last:border-0"
+              >
+                <div className="flex-1">
+                  <p className="font-medium">{t.task_assignments.title}</p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {t.task_assignments.task_number}
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t.task_assignments.completed_at
+                    ? new Date(t.task_assignments.completed_at).toLocaleDateString()
+                    : ''}
+                </p>
+              </div>
+            ))}
+            {history?.mutations.map((m: any) => (
+              <div
+                key={m.id}
+                className="flex items-start gap-3 text-sm py-1 border-b last:border-0"
+              >
+                <div className="flex-1">
+                  <p className="text-sm">
+                    Moved: {m.ms_lokasi?.lokasi_lama?.kode} → {m.ms_lokasi?.lokasi_baru?.kode}
+                  </p>
+                  {m.alasan && <p className="text-xs text-muted-foreground">{m.alasan}</p>}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(m.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 

@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom'
+﻿import { useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -9,6 +9,7 @@ import {
   User,
   MoreHorizontal,
   LogOut,
+  FileSpreadsheet,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -40,6 +41,7 @@ export function MobileNav({ user, onLogout }: MobileNavProps) {
       ? [{ label: 'Master Data', path: '/master/locations', icon: Database }]
       : []),
     ...(isAdmin(user) ? [{ label: 'User Management', path: '/admin/users', icon: Users }] : []),
+    { label: 'Export', path: '/export', icon: FileSpreadsheet },
     { label: 'Profile', path: '/profile', icon: User },
   ]
 
