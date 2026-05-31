@@ -1,4 +1,4 @@
-﻿import { NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -11,6 +11,7 @@ import {
   LogOut,
   FileSpreadsheet,
   BarChart3,
+  Bell,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { isAdmin, hasCapability } from '@/lib/routeAccess'
@@ -120,6 +121,20 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
             {!collapsed && <span>User Mgmt</span>}
           </NavLink>
         )}
+        <NavLink
+          to="/notifications"
+          className={({ isActive }) =>
+            cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              isActive
+                ? 'bg-accent text-accent-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+            )
+          }
+        >
+          <Bell className="size-4 shrink-0" />
+          {!collapsed && <span>Notifications</span>}
+        </NavLink>
         <NavLink
           to="/export"
           className={({ isActive }) =>

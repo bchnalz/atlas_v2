@@ -18,6 +18,7 @@ import MasterData from '@/pages/MasterData'
 import ExportPage from '@/pages/ExportPage'
 import ImportPage from '@/pages/ImportPage'
 import Evaluation from '@/pages/Evaluation'
+import Notifications from '@/pages/Notifications'
 
 const queryClient = new QueryClient()
 
@@ -52,6 +53,7 @@ function App() {
             <Route path="/export" element={<ExportPage />} />
             <Route path="/import" element={<ImportPage />} />
             <Route path="/evaluation" element={<Evaluation />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Route>
 
