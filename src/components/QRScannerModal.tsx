@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,14 +19,9 @@ export function QRScannerModal({ open, onOpenChange }: QRScannerProps) {
   const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
-    if (!open) {
-      // Stop camera when dialog closes
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((t) => t.stop())
-        streamRef.current = null
-      }
-      setScanning(false)
-      return
+    if (!open && streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop())
+      streamRef.current = null
     }
   }, [open])
 
@@ -38,23 +33,9 @@ export function QRScannerModal({ open, onOpenChange }: QRScannerProps) {
         video: { facingMode: 'environment' },
       })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
-
-      // Poll for QR codes every 500ms using a simple approach
-      // For production use a proper QR scanner lib like @yudiel/react-qr-scanner
-      const checkInterval = setInterval(async () => {
-        if (!videoRef.current || !stream.active) {
-          clearInterval(checkInterval)
-          return
-        }
-        // In production: use jsQR or similar to decode from canvas
-        // Here we redirect to a simple approach - QR contains URL like https://app.atlas/devices/{id}
-        // The user scans and the URL triggers navigation
-      }, 500)
-    } catch (err) {
-      setError('Camera access denied. Use manual entry instead.')
+      if (videoRef.current) videoRef.current.srcObject = stream
+    } catch {
+      setError('Camera access denied. Use manual entry below.')
       setScanning(false)
     }
   }
@@ -75,7 +56,7 @@ export function QRScannerModal({ open, onOpenChange }: QRScannerProps) {
       onOpenChange(false)
       navigate(`/devices/${match[1]}`)
     } else {
-      setError('Invalid QR data. Scan a valid device QR code or enter the device ID.')
+      setError('Invalid QR data. Enter a valid device ID.')
     }
   }
 
@@ -110,7 +91,6 @@ export function QRScannerModal({ open, onOpenChange }: QRScannerProps) {
               <span className="text-xs">Open Camera</span>
             </Button>
           )}
-
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground">Or enter manually</label>
             <div className="flex gap-2">
@@ -125,7 +105,6 @@ export function QRScannerModal({ open, onOpenChange }: QRScannerProps) {
               </Button>
             </div>
           </div>
-
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
       </DialogContent>

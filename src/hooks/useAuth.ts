@@ -6,32 +6,6 @@ import type { Profile, UserCategory } from '@/types'
 export function useAuth() {
   const { user, loading, setUser, clear } = useAuthStore()
 
-  useEffect(() => {
-    const init = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      if (session?.user) {
-        await loadProfile(session.user.id, session.user.email ?? '')
-      } else {
-        clear()
-      }
-    }
-    init()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        await loadProfile(session.user.id, session.user.email ?? '')
-      } else {
-        clear()
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
   const loadProfile = async (userId: string, email: string) => {
     const { data: profile } = await supabase
       .from('profiles')
@@ -60,14 +34,35 @@ export function useAuth() {
         userCategory: p.user_categories ?? null,
       })
     } else {
-      setUser({
-        id: userId,
-        email,
-        profile: null,
-        userCategory: null,
-      })
+      setUser({ id: userId, email, profile: null, userCategory: null })
     }
   }
+
+  useEffect(() => {
+    const init = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (session?.user) {
+        await loadProfile(session.user.id, session.user.email ?? '')
+      } else {
+        clear()
+      }
+    }
+    init()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        await loadProfile(session.user.id, session.user.email ?? '')
+      } else {
+        clear()
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })

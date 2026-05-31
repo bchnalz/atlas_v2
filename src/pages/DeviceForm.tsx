@@ -53,6 +53,7 @@ export default function DeviceForm() {
 
   useEffect(() => {
     if (existing) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm((prev) => ({ ...prev, ...existing }))
     }
   }, [existing])
@@ -103,6 +104,7 @@ export default function DeviceForm() {
     },
   })
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   const update = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }))
 
   if (isEdit && loadingExisting) {
